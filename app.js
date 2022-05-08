@@ -1,9 +1,11 @@
 const promptInput = require('./src/promptInput');
 const consoleTable = require("console.table");
 const tynt = require('tynt');
-const { getAllDepartments, addDepartment, deleteDepartment, updateDepartment } = require('./db/queries/department');
+const { getAllDepartments, addDepartment, deleteDepartment, updateDepartment, getDepartmentIDByName } = require('./db/queries/department');
+const { getAllRoles, addRole, deleteRole } = require('./db/queries/roles');
 const { validation } = require('./src/inputValidation');
 
+// Prompts for departments
 const viewAllDepartments = async() => {
     const [allDept] = await getAllDepartments();
     console.log('\n');
@@ -37,6 +39,42 @@ const updateDeptPrompt = async() => {
     init();
 }
 
+// Prompts for roles
+const viewAllRoles = async() => {
+    const [allRoles] = await getAllRoles();
+    console.log('\n');
+    console.log(consoleTable.getTable(allRoles));
+    init();
+};
+
+const addRolePrompt = async() => {
+    const role ={};
+    const promptMessage_title = 'Please enter the title for the role:';
+    const promptMessage_salary = 'Please enter the salary for the role:';
+    const promptMessage_dept = 'Please choose the department from the list';
+    const [allDept] = await getAllDepartments();
+    deptNames = allDept.map((allDept)=> allDept.Department);
+    
+    const roleTitle = await promptInput('roleTitle', 'input', promptMessage_title, [], (input) => validation(input, '', 'NOT_NULL'));
+    const roleSalary = await promptInput('roleSalary', 'input', promptMessage_salary, [], (input) => validation(input, 'INT', 'NOT_NULL'));
+    const roleDept = await promptInput('deptName', 'list', promptMessage_dept, deptNames);
+
+    const [dept] = await getDepartmentIDByName(roleDept);
+
+    role.title = roleTitle;
+    role.salary = roleSalary;
+    [role.department] = dept;
+    await addRole(role);
+    init();
+};
+
+const deleteRolePrompt = async() => {
+    const promptMessage = 'Please enter the role id you wish to delete:';
+    const { roleID } = await promptInput('roleID', 'input', promptMessage, [], (input) => validation(input, 'INT', 'NOT_NULL'));
+    await deleteRole(roleID);
+    init();
+};
+
 const init = async () => {
     console.log(tynt.Blue('----------------------------------------------'));
     const menuArr = [
@@ -48,6 +86,7 @@ const init = async () => {
         'Add Department', 
         'Delete Department',
         'Update Department',
+        'Delete Role',
         'Quit'
     ];
     const startMenu = await promptInput('choice', 'list', 'What would you like to do?', menuArr);
@@ -66,6 +105,18 @@ const init = async () => {
         }
         case "Update Department": {
             updateDeptPrompt();
+            break;
+        }
+        case 'View All Roles': {
+            viewAllRoles();
+            break;
+        }
+        case 'Add Role': {
+            addRolePrompt();
+            break;
+        }
+        case 'Delete Role': {
+            deleteRolePrompt();
             break;
         }
     default: 
