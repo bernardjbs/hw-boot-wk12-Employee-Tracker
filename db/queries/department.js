@@ -6,7 +6,7 @@ class Connection {
     };
 
     getAllDepartments = async () => {
-        const query = 'SELECT id AS ID, dept_name AS Department FROM departments';
+        const query = `SELECT id AS ID, dept_name AS Department FROM departments`;
         const allDepartment = (await this.db).query(query);
         return allDepartment;
     };
@@ -29,8 +29,7 @@ class Connection {
         return updateDepartment;
     };
 
-    getDepartmentIDByName = async({deptName}) => {
-        console.log(deptName)
+    getDepartmentIDByName = async({ deptName }) => {
         const query = (`SELECT id FROM departments WHERE dept_name LIKE '${deptName}';`);
         const getDepartmentIDByName = (await this.db).query(query);
         return getDepartmentIDByName;

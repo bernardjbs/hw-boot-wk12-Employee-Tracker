@@ -1,32 +1,18 @@
 INSERT INTO departments (dept_name)
-VALUES  ("Executive Department"),
-        ("Finance Department"),
-        ("Sales Department"),
-        ("HR Department"),
-        ("Purchase Department"),
-        ("Operations Department"),
-        ("Marketing Department"),
-        ("IT Department");
+VALUES  ("Engineering"),
+        ("Finance"),
+        ("Legal"),
+        ("Sales");
 
 INSERT INTO roles (department_id, title, salary)
-VALUES  (1, "CEO", 120000),
-        (1, "Director", 150000),
-        (2, "Manager", 90000),
-        (2, "Accountant", 80000),
-        (2, "Assistant Manager", 75000),
-        (2, "Clerk", 45000),
-        (3, "Manager", 90000),
-        (4, "Secretary", 50000),
-        (3, "Assistant Manager", 70000),
-        (4, "Manager", 90000),
-        (5, "Assistant Manager", 68000),
-        (5, "Salesman Senior", 55000),
-        (6, "Salesman Junior", 45000),
-        (8, "Developer", 100000),
-        (7, "Manager", 150000),
-        (7, "Assistant Manager", 125000),
-        (8, "Project Manager", 150000),
-        (8, "Tester", 850000);
+VALUES  (4, "Sales Lead", 120000),
+        (4, "Sales Person", 65000),
+        (1, "Lead Engineer", 150000),
+        (2, "Account Manager", 90000),
+        (2, "Accountant", 75000),
+        (3, "Legal Team Lead", 125000),
+        (3, "Lawyer", 115000),
+        (4, "Customer Service", 55000);
 
 INSERT INTO employees (first_name, last_name, role_id)
 VALUES  ("Sebastian", "Hudson", 1), 
@@ -37,24 +23,24 @@ VALUES  ("Sebastian", "Hudson", 1),
 	    ("Sebastian", "Hudson", 4),
 	    ("Theresa", "Hunter", 2),
 	    ("Jacob", "Taylor", 4),
-	    ("Jane", "Hill", 16),
+	    ("Jane", "Hill", 6),
 	    ("Sally", "Parr", 4),
 	    ("Julian", "Terry", 8),
 	    ("Caroline", "Payne", 2),
 	    ("Vanessa", "Slater", 4),
 	    ("Michael", "Manning", 6),
 	    ("Austin", "Howard", 8),
-	    ("Carolyn", "Russell", 16),
+	    ("Carolyn", "Russell", 6),
 	    ("Trevor", "Rutherford", 8),
 	    ("Isaac", "Glover", 2),
 	    ("Victoria", "Cornish", 2),
 	    ("Nicholas", "Short", 4),
-	    ("Andrea", "Payne", 16),
-	    ("Simon", "Mathis", 13),
-	    ("Sebastian", "Martin", 9);
+	    ("Andrea", "Payne", 6),
+	    ("Simon", "Mathis", 3),
+	    ("Sebastian", "Martin", 8);
 
 UPDATE employees SET manager_id = 1 WHERE role_id = 2;
 UPDATE employees SET manager_id = 1 WHERE role_id = 8;
 UPDATE employees SET manager_id = 3 WHERE role_id = 4;
 UPDATE employees SET manager_id = 5 WHERE role_id = 6;
-UPDATE employees SET manager_id = 5 WHERE role_id = 16;
+UPDATE employees SET manager_id = 5 WHERE role_id = 6;
