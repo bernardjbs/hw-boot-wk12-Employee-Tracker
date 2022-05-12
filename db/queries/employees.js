@@ -5,7 +5,7 @@ class Connection {
         this.db = db
     };
 
-    getAllEmployees = async () => {
+    getAllEmployees = async() => {
         const query = `
         SELECT employees.id as ID, 
         CONCAT(employees.first_name, ' ', employees.last_name) AS Employee, 
@@ -27,16 +27,34 @@ class Connection {
 
     getEmployeeIDbyFullName = async(fullName) => {
         const splitName = fullName.split(" ");
-        const query = `SELECT id FROM employees WHERE first_name = '${splitName[0]}' AND last_name = '${splitName[1]}';`;
-        const getEmployeeIDbyFullName = (await this.db).query(query);
+        const values = [splitName[0], splitName[1]];
+        const query = 'SELECT id FROM employees WHERE first_name = ? AND last_name = ?;';
+        const getEmployeeIDbyFullName = (await this.db).query(query, values);
         return getEmployeeIDbyFullName;
-    }
+    };
 
-    addEmployee = async(first_name, last_name, role_id, manager_id) => {
-        const query = (`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES('${first_name}', '${last_name}', ${role_id}, ${manager_id});`);
-        // const query = `SELECT * FROM employees;`;
-        const addEmployee = (await this.db).query(query);
+    addEmployee = async(values) => {
+        const query = 'INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES(?, ?, ?, ?);';
+        const addEmployee = (await this.db).query(query, values);
         return addEmployee;
+    };
+
+    getEmployeeFullName = async() => {
+        const query = `SELECT CONCAT(employees.first_name, ' ', employees.last_name) AS Employee FROM employees`;
+        const getEmployeeFullName = (await this.db).query(query);
+        return getEmployeeFullName;
+    };  
+
+    updateEmpRole = async(values) => {
+        const query = 'UPDATE employees SET role_id = ? WHERE id = ?';
+        const updateEmpRole = (await this.db).query(query, values);
+        return updateEmpRole;
+    };
+
+    deleteEmployee = async(empID) => {
+        const query = 'DELETE FROM employees WHERE id = ?';
+        const updateEmpRole = (await this.db).query(query, empID);
+        return updateEmpRole;
     }
 }
 

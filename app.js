@@ -84,32 +84,63 @@ const viewAllEmployees = async() => {
     init();
 };
 
-const addEmployee = async() => {
+const addEmployeePrompt = async() => {
     const promptMessage_first_name = `Please enter Employee's first name:`;
     const promptMessage_last_name = `Please enter Employee's last name`;
-    const prompotMessage_role = `Please select Employee's role:`;
-    const prompotMessage_manager = `Please select Employee's manager:`;
-    const [roles] = await roleSQL.getAllRoles();
-    const roleTitles = await roles.map((roles => roles.Title));
+    const promptMessage_role = `Please select Employee's role:`;
+    const promptMessage_manager = `Please select Employee's manager:`;
 
-    const [employees] = await empSQL.getAllEmployees();
-
-    const managers = employees.map((employees => employees.Employee));
     const { first_name } = await promptInput('first_name', 'input', promptMessage_first_name, [], (input) => validation(input, '', 'NOT_NULL'));
     const { last_name } = await promptInput('last_name', 'input', promptMessage_last_name, [], (input) => validation(input, '', 'NOT_NULL'));
-    const role_title = await promptInput('role_title', 'list', prompotMessage_role, roleTitles);
-    const [[role]] = await roleSQL.getRoleIDbyTitle(role_title);
-    const { manager_name } = await promptInput('manager_name', 'list', prompotMessage_manager, managers);
-    const [[manager]] = await empSQL.getEmployeeIDbyFullName(manager_name);
+
+    const role = await promptRoleTitles(promptMessage_role);
+    const manager = await promptEmployeeFullName(promptMessage_manager);
     
-    await empSQL.addEmployee(first_name, last_name, role.id, manager.id);
+    const values = [first_name, last_name, role.id, manager.id]
+  
+    await empSQL.addEmployee(values);
+  
     init();
 };
+
+const updateEmpRolePrompt = async() => {
+    const emp = await promptEmployeeFullName('Please choose the Employee whose role you wish to change:'); 
+    const role = await promptRoleTitles('Please choose the role you want to change for employee:')
+    const values = [role.id, emp.id]
+    await empSQL.updateEmpRole(values);
+    init();
+};
+
+const deleteEmployeePrompt = async() => {
+    const message = 'Please choose the Employee whose role you wish to delete:';
+    const emp = await promptEmployeeFullName(message);
+    await empSQL.deleteEmployee(emp.id);
+    init();
+};
+
+
+// Helper prompt codes
+const promptRoleTitles = async(message) => {
+    const [roleTitles] = await roleSQL.getRoleTitles();
+    const titles = roleTitles.map((roleTitles => roleTitles.title));
+    const {role_title} = await promptInput('role_title', 'list', message, titles);
+    const [[role]] = await roleSQL.getRoleIDbyTitle(role_title);
+    return role;
+};
+
+const promptEmployeeFullName = async(message) => {
+    const [employees] = await empSQL.getEmployeeFullName();
+    const emp_fullNames = employees.map((employees => employees.Employee));
+    const {empFullName} = await promptInput('empFullName', 'list', message, emp_fullNames);
+    const [[emp]] = await empSQL.getEmployeeIDbyFullName(empFullName);
+    return emp;
+}
 
 const init = async () => {
     console.log(tynt.Blue('----------------------------------------------'));
     const menuArr = [
         'Add Employee', 
+        'Delete Employee',
         'Update Employee Role', 
         'View All Roles', 
         'Add Role', 
@@ -156,7 +187,15 @@ const init = async () => {
             break;
         }
         case 'Add Employee': {
-            addEmployee();
+            addEmployeePrompt();
+            break;
+        }
+        case 'Update Employee Role': {
+            updateEmpRolePrompt();
+            break;
+        }
+        case 'Delete Employee': {
+            deleteEmployeePrompt();
             break;
         }
     default: 
