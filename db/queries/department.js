@@ -29,10 +29,23 @@ class Connection {
         return updateDepartment;
     };
 
-    getDepartmentIDByName = async({ deptName }) => {
+    getDepartmentIDByName = async(deptName) => {
         const query = (`SELECT id FROM departments WHERE dept_name LIKE '${deptName}';`);
         const getDepartmentIDByName = (await this.db).query(query);
         return getDepartmentIDByName;
+    }
+
+    getDepartmentNames = async() => {
+        const query = 'SELECT dept_name AS name FROM departments;';
+        const getDepartmentNames = (await this.db).query(query);
+        return getDepartmentNames;
+    }
+
+    getDeptBudget = async(department_id) => {
+        const query = `SELECT SUM(salary) AS 'Salary Budget', dept_name as Department FROM 
+        employees JOIN roles ON employees.role_id = roles.id JOIN departments ON departments.id = roles.department_id AND departments.id = ?;`
+        const getDeptBudget = (await this.db).query(query, department_id);
+        return getDeptBudget;
     }
 }
 module.exports = new Connection(dbConn());
