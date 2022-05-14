@@ -4,7 +4,7 @@ class Connection {
     constructor(db) {
         this.db = db
     };
-
+    // METHODS TO RETURN QUERY RESULTS FOR EMPLOYEES TABLE
     getAllEmployees = async () => {
         const query = `
         SELECT employees.id as ID, 
@@ -68,7 +68,7 @@ class Connection {
         const managers = (await this.db).query(query, empID);
         return managers;
     };
-    
+
     getEmpManagers = async () => {
         const query = `SELECT DISTINCT CONCAT(e.first_name , ' ', e.last_name) AS name FROM employees e JOIN employees m ON e.id = m.manager_id; `;
         const managers = (await this.db).query(query);

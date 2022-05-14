@@ -4,7 +4,7 @@ class Connection {
     constructor(db) {
         this.db = db;
     };
-
+    // METHODS TO RETURN QUERY RESULTS FOR DEPARTMENTS TABLE
     getAllDepartments = async() => {
         const query = `SELECT id AS ID, dept_name AS Department FROM departments`;
         const allDepartment = (await this.db).query(query);

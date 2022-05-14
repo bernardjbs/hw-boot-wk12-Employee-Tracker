@@ -4,7 +4,7 @@ class Connection {
     constructor(db) {
         this.db = db;
     };
-
+    // METHODS TO RETURN QUERY RESULTS FOR ROLES TABLE
     getAllRoles = async() => {
         const query = 'SELECT roles.id AS ID, title AS Title, salary AS Salary, dept_name as Department FROM roles INNER JOIN departments on roles.department_id = departments.id ORDER BY id;';
         const allRole = (await this.db).query(query);
