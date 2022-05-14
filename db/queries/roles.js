@@ -6,29 +6,26 @@ class Connection {
     };
 
     getAllRoles = async() => {
-        const query = 'SELECT roles.id AS ID, title AS Title, salary AS Salary, dept_name as Department FROM roles INNER JOIN departments on roles.department_id = departments.id;';
+        const query = 'SELECT roles.id AS ID, title AS Title, salary AS Salary, dept_name as Department FROM roles INNER JOIN departments on roles.department_id = departments.id ORDER BY id;';
         const allRole = (await this.db).query(query);
         return allRole;
     };
 
-    addRole = async({ title, salary, department }) => {
-        title = title.roleTitle;
-        salary = salary.roleSalary;
-        const dept_id = department.id;
-        const query = (`INSERT INTO roles (title, salary, department_id) VALUES ('${title}', ${salary}, ${dept_id});`);
-        const addRole = (await this.db).query(query);
+    addRole = async(role) => {
+        const query = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?);`;
+        const addRole = (await this.db).query(query, role);
         return addRole;
     };
 
     deleteRole = async(id) => {
-        const query = (`DELETE FROM roles WHERE id = ${id};`);
-        const deleteRole = (await this.db).query(query);
+        const query = (`DELETE FROM roles WHERE id = ?;`);
+        const deleteRole = (await this.db).query(query, id);
         return deleteRole;
     };
 
     getRoleIDbyTitle = async(role_title) => {
-        const query = (`SELECT id FROM roles WHERE title LIKE '${role_title}';`);
-        const getRoleIDbyTitle = (await this.db).query(query);
+        const query = (`SELECT id FROM roles WHERE title LIKE ?;`);
+        const getRoleIDbyTitle = (await this.db).query(query, role_title);
         return getRoleIDbyTitle;
     }
 

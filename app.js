@@ -1,89 +1,102 @@
 const promptInput = require('./src/promptInput');
 const consoleTable = require("console.table");
-const tynt = require('tynt');
+const colors = require('colors');
 const deptSQL = require('./db/queries/department');
 const roleSQL = require('./db/queries/roles');
 const empSQL = require('./db/queries/employees');
 const { validation } = require('./src/inputValidation');
 
-// Prompts for departments
+// VIEW ALL DEPARTMENTS
 const viewAllDepartments = async () => {
     const [allDept] = await deptSQL.getAllDepartments();
     console.log('\n');
-    console.log(consoleTable.getTable(allDept));
+    console.log(consoleTable.getTable(allDept).green);
     init();
 };
 
-const addDeptPrompt = async () => {
-    const promptMessage = 'Please enter the department name you want to add:';
-    const { deptName } = await promptInput('deptName', 'input', promptMessage, [], (input) => validation(input, '', 'NOT_NULL'));
-    await deptSQL.addDepartment(deptName);
-    init();
-};
-
-const delDeptPrompt = async () => {
-    const promptMessage = 'Please enter the department ID you want to delete:';
-    const { deptID } = await promptInput('deptID', 'input', promptMessage, [], (input) => validation(input, 'INT', 'NOT_NULL'));
-    await deptSQL.deleteDepartment(deptID);
-    init();
-}
-
-const updateDeptPrompt = async () => {
-    const department = {};
-    const prompotMessage_id = 'Please enter the department ID you want to update:';
-    const promptMessage_name = 'Please enter the department name to be updated:';
-    const { deptID } = await promptInput('deptID', 'input', prompotMessage_id, [], (input) => validation(input, 'INT', 'NOT_NULL'));
-    const { deptName } = await promptInput('deptName', 'input', promptMessage_name, [], (input) => validation(input, '', 'NOT_NULL'));
-    department.id = deptID;
-    department.name = deptName;
-    await deptSQL.updateDepartment(department);
-    init();
-}
-
-// Prompts for roles
+// VIEW ALL ROLES
 const viewAllRoles = async () => {
     const [allRoles] = await roleSQL.getAllRoles();
     console.log('\n');
-    console.log(consoleTable.getTable(allRoles));
+    console.log(consoleTable.getTable(allRoles).green);
     init();
 };
 
-const addRolePrompt = async () => {
-    const role = {};
-    const promptMessage_title = 'Please enter the title for the role:';
-    const promptMessage_salary = 'Please enter the salary for the role:';
-    const promptMessage_dept = 'Please choose the department from the list';
-    const [allDept] = await deptSQL.getAllDepartments();
-    deptNames = allDept.map((allDept) => allDept.Department);
-
-    const roleTitle = await promptInput('roleTitle', 'input', promptMessage_title, [], (input) => validation(input, '', 'NOT_NULL'));
-    const roleSalary = await promptInput('roleSalary', 'input', promptMessage_salary, [], (input) => validation(input, 'INT', 'NOT_NULL'));
-    const {roleDept} = await promptInput('deptName', 'list', promptMessage_dept, deptNames);
-
-    const [[dept]] = await deptSQL.getDepartmentIDByName(roleDept);
-
-    role.title = roleTitle;
-    role.salary = roleSalary;
-    role.department = dept;
-    await roleSQL.addRole(role);
-    init();
-};
-
-const deleteRolePrompt = async () => {
-    const promptMessage = 'Please enter the role id you wish to delete:';
-    const { roleID } = await promptInput('roleID', 'input', promptMessage, [], (input) => validation(input, 'INT', 'NOT_NULL'));
-    await roleSQL.deleteRole(roleID);
-    init();
-};
-
-// Prompt for Employees
+// VIEW ALL EMPLOYEES
 const viewAllEmployees = async () => {
     const [allEmp] = await empSQL.getAllEmployees();
     console.log('\n');
-    console.log(consoleTable.getTable(allEmp));
+    console.log(consoleTable.getTable(allEmp).green);
     init();
 };
 
+// VIEW EMPLOYEES BY MANAGER
+const viewEmpByManagerPrompt = async () => {
+    const [managers] = await empSQL.getEmpManagers();
+    const managerNames = managers.map(managers => managers.name);
+    const { manager } = await promptInput('manager', 'list', 'Please select the manager whose employees you want to view:', managerNames);
+    const [[getManager]] = await empSQL.getEmployeeIDbyFullName(manager);
+    const managerID = getManager.id;
+    const [subordinates] = await empSQL.getEmployeesByManager(managerID)
+    console.log(consoleTable.getTable(subordinates).green);
+    init();
+};
+
+// VIEW EMPLOYEES BY DEPARTMENT
+const viewEmpByDeptPrompt = async () => {
+    const [departments] = await deptSQL.getDepartmentNames();
+    deptNames = departments.map(departments => departments.name);
+    const { dept } = await promptInput('dept', 'list', 'Please choose the department whose employees you wish to view:', deptNames);
+    const [[getDept]] = await deptSQL.getDepartmentIDByName(dept);
+    const [employees] = await empSQL.getEmployeesByDepartment(getDept.id);
+    console.log(consoleTable.getTable(employees).green);
+    init();
+};
+
+// VIEW DEPARTMENT BUDGET
+const viewDeptBudgetPrompt = async () => {
+    const [departments] = await deptSQL.getDepartmentNames();
+    deptNames = departments.map(departments => departments.name);
+    const { dept } = await promptInput('dept', 'list', 'Please choose the department whose budget you wish to view:', deptNames);
+    const [[getDept]] = await deptSQL.getDepartmentIDByName(dept);
+    const [budget] = await deptSQL.getDeptBudget(getDept.id);
+    console.log(consoleTable.getTable(budget).green);
+    init();
+};
+
+// ADD A DEPARTMENT
+const addDeptPrompt = async () => {
+    const promptMessage = 'Please enter the department name you want to add:'.blue;
+    const { deptName } = await promptInput('deptName', 'input', promptMessage, [], (input) => validation(input, '', 'NOT_NULL'));
+    await deptSQL.addDepartment(deptName);
+    console.log(`\n Department ${deptName} has been added to the database \n`.brightGreen);
+    init();
+};
+
+// ADD A ROLE
+const addRolePrompt = async () => {
+    const role = [];
+    const promptMessage_title = 'Please enter the title for the role:'.blue;
+    const promptMessage_salary = 'Please enter the salary for the role:'.blue;
+    const promptMessage_dept = 'Please choose the department from the list';
+    const [allDept] = await deptSQL.getAllDepartments();
+    const deptNames = allDept.map(allDept => allDept.Department);
+
+    const { roleTitle } = await promptInput('roleTitle', 'input', promptMessage_title, [], (input) => validation(input, '', 'NOT_NULL'));
+    const { roleSalary } = await promptInput('roleSalary', 'input', promptMessage_salary, [], (input) => validation(input, 'INT', 'NOT_NULL'));
+
+    const { deptName } = await promptInput('deptName', 'list', promptMessage_dept, deptNames);
+    const [[dept]] = await deptSQL.getDepartmentIDByName(deptName);
+
+    role.push(roleTitle);
+    role.push(roleSalary);
+    role.push(dept.id);
+    await roleSQL.addRole(role);
+    console.log(`\n Role ${roleTitle} has been added to the database \n`.brightGreen);
+    init();
+};
+
+// ADD AN EMPLOYEE
 const addEmployeePrompt = async () => {
     const promptMessage_first_name = `Please enter Employee's first name:`;
     const promptMessage_last_name = `Please enter Employee's last name`;
@@ -99,67 +112,77 @@ const addEmployeePrompt = async () => {
     const values = [first_name, last_name, role.id, manager.id]
 
     await empSQL.addEmployee(values);
-
+    console.log(`\n Employee ${first_name} ${last_name} has been added to the database \n`.brightGreen);
     init();
 };
 
-const updateEmpRolePrompt = async () => {
-    const emp = await promptEmployeeFullName('Please choose the Employee whose role you wish to change:');
-    const role = await promptRoleTitles('Please choose the role you want to change for employee:')
-    const values = [role.id, emp.id]
-    await empSQL.updateEmpRole(values);
+// UPDATE DEPARTMENT
+const updateDeptPrompt = async () => {
+    const department = [];
+    const promptMessage_name = 'Please enter the department name to be updated:';
+    const dept = await promptDeptNames('Please select the department you want to update:')
+    const { deptName } = await promptInput('deptName', 'input', promptMessage_name, [], (input) => validation(input, '', 'NOT_NULL'));
+    department.push(deptName);
+    department.push(dept.id);
+    await deptSQL.updateDepartment(department);
+    console.log(`\n Department ${deptName} has been updated to the database \n`.brightYellow);
     init();
-};
+}
 
-const deleteEmployeePrompt = async () => {
-    const message = 'Please choose the Employee whose role you wish to delete:';
-    const emp = await promptEmployeeFullName(message);
-    await empSQL.deleteEmployee(emp.id);
-    init();
-};
-
-const updateEmpManagerPrompt = async() => {
+// UPDATE AN EMPLOYEE'S MANAGER
+const updateEmpManagerPrompt = async () => {
     const emp = await promptEmployeeFullName('Please choose the Employee for which you wish to update their Manager:')
     const [managers] = await empSQL.getManagersByEmpID(emp.id);
     const managerNames = managers.map(managers => managers.Manager);
     managerNames.unshift('NONE');
-    const {manager} = await promptInput('manager', 'list', `Please select the employee's manager`, managerNames);
+    const { manager } = await promptInput('manager', 'list', `Please select the employee's manager`, managerNames);
     let getManager = 'NULL';
     if (manager !== 'NONE') {
         [[getManager]] = await empSQL.getEmployeeIDbyFullName(manager);
     };
     await empSQL.updateEmpManager([getManager.id, emp.id]);
+    console.log(`\n  ${manager} is now the manager for the employee with id ${emp.id}. The database has been updated. \n`.brightYellow);
     init();
 };
 
-const viewEmpByManagerPrompt = async() => {
-    const [managers] = await empSQL.getEmpManagers();
-    const managerNames = managers.map(managers => managers.name);
-    const {manager} = await promptInput('manager', 'list', 'Please select the manager whose employees you want to view:', managerNames);
-    const [[getManager]] = await empSQL.getEmployeeIDbyFullName(manager);
-    const managerID = getManager.id;
-    const [subordinates] = await empSQL.getEmployeesByManager(managerID)
-    console.log(consoleTable.getTable(subordinates));
+// UPDATE AN EMPLOYEE'S ROLE
+const updateEmpRolePrompt = async () => {
+    const emp = await promptEmployeeFullName('Please choose the Employee whose role you wish to change:');
+    const role = await promptRoleTitles('Please choose the role you want to change for employee:');
+    const values = [role.id, emp.id];
+    console.log(`\n Role ${role.id} has been updated for employee ${emp.id} in the database. \n`.brightYellow);
+    await empSQL.updateEmpRole(values);
     init();
 };
 
-const viewEmpByDeptPrompt = async() => {
-    const [departments] = await deptSQL.getDepartmentNames();
-    deptNames = departments.map(departments => departments.name);
-    const {dept} = await promptInput('dept', 'list', 'Please choose the department whose employees you wish to view:', deptNames);
-    const [[getDept]] = await deptSQL.getDepartmentIDByName(dept);
-    const [employees] = await empSQL.getEmployeesByDepartment(getDept.id);
-    console.log(consoleTable.getTable(employees));
+// DELETE DEPARTMENT
+const delDeptPrompt = async () => {
+    const dept = await promptDeptNames('Please select the department you want to delete:'.red);
+    const confirm = await promptInput('delete', 'confirm', `\n ARE YOU SURE YOU WANT TO DELETE DEPARTMENT ${dept.id}`.brightGreen.red);
+    if (confirm.delete) {
+        await deptSQL.deleteDepartment(dept.id);
+    }
+    init();
+}
+
+// DELETE ROLE
+const deleteRolePrompt = async () => {
+    const role = await promptRoleTitles('Please select the role you want to delete:'.red)
+    const confirm = await promptInput('delete', 'confirm', `\n Are you sure you want to DELETE ROLE ${role.id}`.brightGreen.red);
+    if (confirm.delete) {
+        await roleSQL.deleteRole(role.id);
+    }
     init();
 };
 
-const viewDeptBudgetPrompt = async() => {
-    const [departments] = await deptSQL.getDepartmentNames();
-    deptNames = departments.map(departments => departments.name);
-    const {dept} = await promptInput('dept', 'list', 'Please choose the department whose budget you wish to view:', deptNames);
-    const [[getDept]] = await deptSQL.getDepartmentIDByName(dept);
-    const [budget] = await deptSQL.getDeptBudget(getDept.id);
-    console.log(consoleTable.getTable(budget));
+// DELETE EMPLOYEE
+const deleteEmployeePrompt = async () => {
+    const message = 'Please choose the Employee whose role you wish to delete:';
+    const emp = await promptEmployeeFullName(message);
+    const confirm = await promptInput('delete', 'confirm', `\n Are you sure you want to DELETE EMPLOYEE ${emp.id}`.brightGreen.red);
+    if (confirm.delete) {
+        await empSQL.deleteEmployee(emp.id);
+    }
     init();
 };
 
@@ -180,29 +203,39 @@ const promptEmployeeFullName = async (message) => {
     return emp;
 }
 
+const promptDeptNames = async (message) => {
+    const [departments] = await deptSQL.getDepartmentNames();
+    const deptNames = departments.map(departments => departments.name);
+    const { deptName } = await promptInput('deptName', 'list', message, deptNames);
+    const [[dept]] = await deptSQL.getDepartmentIDByName(deptName);
+    return dept;
+}
+
 const init = async () => {
-    console.log(tynt.Blue('----------------------------------------------'));
+
     const menuArr = [
-        'Add Employee',
-        'Delete Employee',
-        'View Department Budget',
-        'Update Employee Manager',
-        'Update Employee Role',
+        'View All Departments',
+        'View All Roles',
+        'View All Employees',
         'View Employees By Manager',
         'View Employees By Department',
-        'View All Roles',
-        'Add Role',
-        'View All Departments',
+        'View Department Budget',
         'Add Department',
-        'Delete Department',
+        'Add Role',
+        'Add Employee',
         'Update Department',
+        'Update Employee Manager',
+        'Update Employee Role',
+        'Delete Department',
         'Delete Role',
-        'View All Employees',
+        'Delete Employee',
         'Quit'
     ];
     const startMenu = await promptInput('choice', 'list', 'What would you like to do?', menuArr);
+    console.clear();
     switch (startMenu.choice) {
         case "View All Departments": {
+            console.clear();
             viewAllDepartments();
             break;
         }
@@ -219,6 +252,7 @@ const init = async () => {
             break;
         }
         case 'View All Roles': {
+            console.clear();
             viewAllRoles();
             break;
         }
@@ -231,6 +265,7 @@ const init = async () => {
             break;
         }
         case 'View All Employees': {
+            console.clear();
             viewAllEmployees();
             break;
         }
@@ -262,12 +297,12 @@ const init = async () => {
             viewDeptBudgetPrompt();
             break;
         }
+        case 'Quit': {
+            process.exit();
+        }
         default:
             return console.log("Make a choice")
     };
 };
 
 init();
-
-// todo: Change queries to take parameter values
-// todo: Add error handling
