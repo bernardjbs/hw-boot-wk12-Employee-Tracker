@@ -5,7 +5,7 @@ This is a content management system console application to interact with informa
 
 ## Database Design
 > Relationship Diagram
-![Start Page](./media/DD.jpg)
+![Start Page](./src/img/DD.jpg)
 
 Delete constraint: When a role is deleted, role_id is set to null on employees 
 
